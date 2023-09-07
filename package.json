@@ -1,0 +1,26 @@
+{
+  "name": "BackendFolder",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon index.js",
+    "start": "node index.js"
+  },
+  "license": "MIT",
+  "description": "Backend folder for calendar mern stack app",
+  "keywords": [
+    "Node",
+    "Express",
+    "MERN",
+    "React-Calendar",
+    "Fullstack-Calendar"
+  ],
+  "author": "Lokesh Pereiro",
+  "dependencies": {
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-validator": "^7.0.1",
+    "mongoose": "^7.5.0",
+    "nodemon": "^3.0.1"
+  }
+}
