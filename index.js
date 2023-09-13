@@ -18,6 +18,7 @@ app.use(cors());
 // });
 app.use(express.static("public"));
 app.use("/api/auth", require("./routes/auth")); //! La Ruta y el Código
+app.use("/api/events", require("./routes/events"));
 
 const startServer = async () => {
   const port = process.env.PORT || 8000;
