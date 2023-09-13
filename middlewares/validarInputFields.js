@@ -10,7 +10,7 @@ const validarInputFields = (req, res = response, next) => {
       errors: errors.mapped(),
     });
   }
-  //! Next se ejecuta cuando no hay errores
+  //* Next se ejecuta cuando no hay errores
   next();
 };
 
