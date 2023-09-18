@@ -33,14 +33,86 @@ const crearEvento = async (req, res = response) => {
   });
 };
 
-const actualizarEvento = (req, res = response) => {
+const actualizarEvento = async (req, res = response) => {
+  const evtId = req.params.id;
+  const uid = req.uid;
+  // console.log(evtId);
+
+  try {
+    const event = Events.findById(evtId);
+    if (!event) {
+      return res.status(404).json({
+        ok: false,
+        msg: `No hay ningún event con ese id: ${evtId}`,
+      });
+    }
+    if (event.user.toString() !== uid) {
+      return res.status(401).json({
+        ok: false,
+        msg: "No puedes editar este evento",
+      });
+    }
+    const nuevoEvento = {
+      ...req.body,
+      user: uid,
+    };
+    const eventoActualizado = await Events.findByIdAndUpdate(
+      evtId,
+      nuevoEvento,
+      { new: true }
+    );
+    res.json({
+      ok: true,
+      evento: eventoActualizado,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      ok: false,
+      msg: "Algo salió mal",
+    });
+  }
   res.json({
     ok: true,
     msg: "actualizarEvento",
   });
 };
 
-const eliminarEvento = (req, res = response) => {
+const eliminarEvento = async (req, res = response) => {
+  const evtId = req.params.id;
+  const uid = req.uid;
+  // console.log(evtId);
+
+  try {
+    const event = Events.findById(evtId);
+    if (!event) {
+      return res.status(404).json({
+        ok: false,
+        msg: `No hay ningún event con ese id: ${evtId}`,
+      });
+    }
+    if (event.user !== uid) {
+      return res.status(401).json({
+        ok: false,
+        msg: "No puedes eliminar este evento",
+      });
+    }
+    const nuevoEvento = {
+      ...req.body,
+      user: uid,
+    };
+    await Events.findByIdAndDelete(evtId, nuevoEvento, { new: true });
+    res.json({
+      ok: true,
+      evento: eventoActualizado,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      ok: false,
+      msg: "Algo salió mal",
+    });
+  }
   res.json({
     ok: true,
     msg: "eliminarEvento",
