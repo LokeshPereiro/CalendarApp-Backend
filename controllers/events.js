@@ -1,7 +1,7 @@
 const { response } = require("express");
 const Events = require("../models/Events");
 const getEventos = async (req, res = response) => {
-  const eventos = await Events.find().populate("user", "name");
+  const eventos = await Events.find().populate("user", "name"); //info del user que creó el evento
   res.json({
     ok: true,
     msg: "getEventos",
@@ -13,6 +13,7 @@ const crearEvento = async (req, res = response) => {
   // console.log(req.body);
   const evento = new Events(req.body);
   try {
+    //?Referencia al user y su uid
     evento.user = req.uid;
     const savedEvt = await evento.save();
     res.json({
@@ -24,22 +25,74 @@ const crearEvento = async (req, res = response) => {
     console.log(error);
     res.status(500).json({
       ok: false,
-      msg: "No se pudo guardar el Evento",
+      msg: "No se pudo crear el Evento",
     });
   }
-  res.json({
-    ok: true,
-    msg: "crearEvento",
-  });
 };
 
 const actualizarEvento = async (req, res = response) => {
+  const evtId = req.params.id;
+  // console.log(evtId);
+  const uid = req.uid;
+  // console.log(uid);
+  try {
+    const event = await Events.findById(evtId);
+
+    if (!event) {
+      return res.status(404).json({
+        ok: false,
+        msg: `No hay ningún event con ese id: ${evtId}`,
+      });
+    } else if (event.user.toString() !== uid) {
+      return res.status(401).json({
+        ok: false,
+        msg: "Este evento no puedes editar porque no es tuyo!",
+      });
+    }
+    // if (event.user.toString() !== uid) {
+    //   return res.status(401).json({
+    //     ok: false,
+    //     msg: "No puedes editar este evento",
+    //   });
+    // }
+
+    const nuevoEventoActualizado = {
+      ...req.body,
+      user: uid,
+    };
+
+    const eventoActualizado = await Events.findByIdAndUpdate(
+      evtId,
+      nuevoEventoActualizado,
+      { new: true }
+    );
+
+    res.json({
+      ok: true,
+      evento: eventoActualizado,
+      msg: "Se actualizó correctamente!",
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      ok: false,
+      msg: "Algo salió mal",
+    });
+  }
+  // res.json({
+  //   ok: true,
+  //   msg: "actualizarEvento",
+  //   evtId,
+  // });
+};
+
+const eliminarEvento = async (req, res = response) => {
   const evtId = req.params.id;
   const uid = req.uid;
   // console.log(evtId);
 
   try {
-    const event = Events.findById(evtId);
+    const event = await Events.findById(evtId);
     if (!event) {
       return res.status(404).json({
         ok: false,
@@ -49,21 +102,15 @@ const actualizarEvento = async (req, res = response) => {
     if (event.user.toString() !== uid) {
       return res.status(401).json({
         ok: false,
-        msg: "No puedes editar este evento",
+        msg: "No puedes eliminar este evento, No es tuyo",
       });
     }
-    const nuevoEvento = {
-      ...req.body,
-      user: uid,
-    };
-    const eventoActualizado = await Events.findByIdAndUpdate(
-      evtId,
-      nuevoEvento,
-      { new: true }
-    );
+
+    await Events.findByIdAndDelete(evtId);
+
     res.json({
       ok: true,
-      evento: eventoActualizado,
+      msg: "Se elimino el evento correctamente",
     });
   } catch (error) {
     console.log(error);
@@ -72,51 +119,10 @@ const actualizarEvento = async (req, res = response) => {
       msg: "Algo salió mal",
     });
   }
-  res.json({
-    ok: true,
-    msg: "actualizarEvento",
-  });
-};
-
-const eliminarEvento = async (req, res = response) => {
-  const evtId = req.params.id;
-  const uid = req.uid;
-  // console.log(evtId);
-
-  try {
-    const event = Events.findById(evtId);
-    if (!event) {
-      return res.status(404).json({
-        ok: false,
-        msg: `No hay ningún event con ese id: ${evtId}`,
-      });
-    }
-    if (event.user !== uid) {
-      return res.status(401).json({
-        ok: false,
-        msg: "No puedes eliminar este evento",
-      });
-    }
-    const nuevoEvento = {
-      ...req.body,
-      user: uid,
-    };
-    await Events.findByIdAndDelete(evtId, nuevoEvento, { new: true });
-    res.json({
-      ok: true,
-      evento: eventoActualizado,
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({
-      ok: false,
-      msg: "Algo salió mal",
-    });
-  }
-  res.json({
-    ok: true,
-    msg: "eliminarEvento",
-  });
+  // res.json({
+  //   ok: true,
+  //   msg: "eliminarEvento",
+  // });
 };
 
 module.exports = {

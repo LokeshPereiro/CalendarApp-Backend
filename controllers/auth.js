@@ -16,7 +16,7 @@ const registrarUsuario = async (req, res = response) => {
     if (user) {
       return res.status(400).json({
         ok: false,
-        msg: "Sorry, ese usuario ya existe en la DB",
+        msg: "Sorry, ese usuario ya existe con ese email",
       });
     }
     user = new User(req.body);
@@ -25,8 +25,9 @@ const registrarUsuario = async (req, res = response) => {
     user.password = bcrypt.hashSync(password, salt);
 
     await user.save();
-    //Generar Token
+    //Token payload info to be sent, so that we could have token
     const token = await generarJWT(user.id, user.name);
+
     res.status(201).json({
       ok: true,
       uid: user.id,
@@ -48,10 +49,11 @@ const loginUsuario = async (req, res = response) => {
   const { email, password } = req.body;
   try {
     const user = await User.findOne({ email });
+
     if (!user) {
       return res.status(400).json({
         ok: false,
-        msg: "Sorry, ese usuario ya existe en la DB",
+        msg: "Sorry, ese usuario no existe en la DB",
       });
     }
     //Confirmar la contraseña
